@@ -15,13 +15,18 @@ export async function handleEvent(event: FetchEvent) {
   }
 
   try {
-    return await getAssetFromKV(event, {});
+    // Pass the original request headers to getAssetFromKV
+    return await getAssetFromKV(event, {
+      headers: event.request.headers,
+    });
   } catch (ex) {
     if (ex.status === 404) {
       // Page not found. Do a 404 fallback for SPA
       return await getAssetFromKV(event, {
         mapRequestToAsset: (req) => {
-          return new Request(`${new URL(req.url).origin}/index.html`);
+          return new Request(`${new URL(req.url).origin}/index.html`, {
+            headers: req.headers, // Pass the original request headers
+          });
         },
       });
     }
